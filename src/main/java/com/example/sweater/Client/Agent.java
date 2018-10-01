@@ -28,12 +28,8 @@ public class Agent implements AgentInterface {
 
 
     @Override
-    public void sendMessageToMyself(String message) {//TODO: remove try/catch block and add "throws"
-        try {
-            socketSession.sendMessage(new TextMessage(message));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void sendMessageToMyself(String message) throws IOException{
+        socketSession.sendMessage(new TextMessage(message));
     }
 
     @Override

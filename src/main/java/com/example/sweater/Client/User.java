@@ -38,12 +38,8 @@ public class User implements UserInterfece {
     }
 
     @Override
-    public void sendMessageToMyself(String message) {
-        try {
-            socketSession.sendMessage(new TextMessage(message));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void sendMessageToMyself(String message) throws IOException{
+        socketSession.sendMessage(new TextMessage(message));
     }
 
     @Override

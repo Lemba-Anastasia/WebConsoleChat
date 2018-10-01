@@ -56,7 +56,6 @@ public class MessageHandler {
                 base.chatCreation();
             }
         } else if (m.matches("/leave(\\s*)")) {
-            //TODO: добавить проверку на то юзер ли это, агент из чата просто ливать вроде как не должен
             Client client;
             if ((client = base.searchClientBySession(session)) != null) {
                 client.sendMessageToMyself("server: You left the chat with the previous companion");

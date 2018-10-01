@@ -99,7 +99,7 @@ public class Base {
         }
     }
 
-    public void leaveChat(Client client) throws IOException {//FIXME:
+    public void leaveChat(Client client) throws IOException {
         if (client.getCompanion() != null) {
             try {
                 client.getCompanion().sendMessageToMyself("server: Companion left the chat");
@@ -152,23 +152,27 @@ public class Base {
         } else {
             client = (Client) o;
         }
-        if (client instanceof UserInterfece) {
-            queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
-            chatCreation();
-        } else {
-            client.getCompanion().setCompanion(null);
-        }
-        log.info(client.getName() + " left the chat");
-        try {
-            client.getCompanion().sendMessageToMyself(" Companion disconnected");
-        } catch (IOException e) {
-            log.warning(e.getMessage());
-        }
-        try {
-            client.close();
-            remove(client);
-        } catch (IOException e) {
-            log.warning(e.getMessage());
+        if(client.getCompanion()!=null){
+            if (client instanceof UserInterfece) {
+                queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
+                chatCreation();
+            } else {
+                client.getCompanion().setCompanion(null);
+            }
+            log.info(client.getName() + " left the chat");
+            try {
+                client.getCompanion().sendMessageToMyself(" Companion disconnected");
+                client.close();
+                remove(client);
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+            }
+        }else {
+            try {
+                client.close();
+            } catch (IOException e) {
+                log.warning(e.getMessage());
+            }
         }
     }
 
