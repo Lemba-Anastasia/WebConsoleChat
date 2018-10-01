@@ -1,5 +1,6 @@
 package com.example.sweater;
 
+import com.example.sweater.consoleServer.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,6 +10,8 @@ public class BeanConfiguration {
     Base base(){
         return new Base();
     }
+    @Bean
+    Server server(){return  new Server();}
 
     @Bean
     MessageHandler messageHandler(){
@@ -24,4 +27,5 @@ public class BeanConfiguration {
     SocketHandlerUser socketHandlerUser(){
         return new SocketHandlerUser();
     }
+
 }

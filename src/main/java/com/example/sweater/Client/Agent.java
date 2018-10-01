@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Agent implements AgentInterface {
     private WebSocketSession socketSession;
     private String name;
-    private User companion;
+    private UserInterfece companion;
 
     public Agent(String clientName, WebSocketSession session) {
         name = clientName;
@@ -16,7 +16,7 @@ public class Agent implements AgentInterface {
     }
 
     @Override
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
         sendMessageToMyself(name + ": " + message);
         companion.sendMessageToMyself(name + ": " + message);
     }

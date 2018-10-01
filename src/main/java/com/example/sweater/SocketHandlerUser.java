@@ -19,7 +19,7 @@ public class SocketHandlerUser extends TextWebSocketHandler {
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         Map<String, String> value = new Gson().fromJson(message.getPayload(), Map.class);
-        String sendingMessage = value.get("name");
+        String sendingMessage = value.get("message");
         if (sendingMessage.charAt(0) == '/') messageHandler.handlingCommandsMessage(sendingMessage, session);
         else {
             messageHandler.handlingMessage(sendingMessage, session);

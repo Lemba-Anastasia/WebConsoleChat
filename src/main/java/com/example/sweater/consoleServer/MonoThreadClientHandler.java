@@ -20,14 +20,14 @@ public class MonoThreadClientHandler implements Runnable{
     private BufferedReader in;
     private PrintWriter out;
     private Client client;
-    @Autowired
-    Base base;
+    private Base base;
 
 
-    public MonoThreadClientHandler(Socket socket, BufferedReader in, PrintWriter out) {
+    public MonoThreadClientHandler(Socket socket, BufferedReader in, PrintWriter out, Base base) {
         this.socket = socket;
         this.in = in;
         this.out = out;
+        this.base = base;
     }
 
     @Override
@@ -71,8 +71,8 @@ public class MonoThreadClientHandler implements Runnable{
                     freeUser.sendMessage(freeUser.getWaitingMessages() + message);
                     if (freeUser.isWaiting())
                         freeUser.clearBuffer();
-                    base.getQueueOfWaitingAgents().removeFirst();
-                    base.getQueueOfWaitingUsers().removeFirst();
+                    base.removeFirstAgentFromQueue();
+                    base.removeFirstUserFromQueue();
                 } else {
                     ((UserConsole) client).setBufferMessages(message);
                 }

@@ -1,5 +1,6 @@
 package com.example.sweater.consoleServer.Client;
 
+import com.example.sweater.Client.AgentInterface;
 import com.example.sweater.Client.Client;
 import com.example.sweater.Client.UserInterfece;
 
@@ -9,7 +10,7 @@ import java.net.Socket;
 public class UserConsole implements UserInterfece {
     private String name;
     private Socket socket;
-    private AgentConsole companion;
+    private AgentInterface companion;
     private String waitingPutMessages;
     public UserConsole(String name, Socket socket) {
         this.name=name;
@@ -20,20 +21,17 @@ public class UserConsole implements UserInterfece {
 
     @Override
     public void sendMessage(String message) throws IOException {
-        if(companion!=null){
-            companion.getSocket().getOutputStream().write((name+": "+message+"\n").getBytes());
-            companion.getSocket().getOutputStream().flush();
+        if (companion instanceof AgentConsole) {
+            ((AgentConsole)companion).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
+            ((AgentConsole)companion).getSocket().getOutputStream().flush();
+        }else{
+            companion.sendMessageToMyself(name + ": " + message);
         }
     }
 
-    @Override
-    public void sendMessageToMyself(String message)  {
-        try {
-            socket.getOutputStream().write((message+"\n").getBytes());
-            socket.getOutputStream().flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override public void sendMessageToMyself(String message) throws IOException  {
+        socket.getOutputStream().write((message+"\n").getBytes());
+        socket.getOutputStream().flush();
 
     }
 

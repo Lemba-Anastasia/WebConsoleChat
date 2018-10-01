@@ -1,8 +1,8 @@
 package com.example.sweater;
 
-import com.example.sweater.Client.Client;
-import com.example.sweater.Client.AgentInterface;
-import com.example.sweater.Client.UserInterfece;
+import com.example.sweater.Client.*;
+import com.example.sweater.consoleServer.Client.AgentConsole;
+import com.example.sweater.consoleServer.Client.UserConsole;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -146,10 +146,14 @@ public class Base {
     }
 
     public void exit(Object o) {
-        Client client = searchClientBySession((WebSocketSession) o);
-        assert client != null;
+        Client client;
+        if (o instanceof WebSocketSession) {
+            client = searchClientBySession((WebSocketSession) o);
+        } else {
+            client = (Client) o;
+        }
         if (client instanceof UserInterfece) {
-            addToQWaitingAgent((AgentInterface) client.getCompanion());
+            queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
             chatCreation();
         } else {
             client.getCompanion().setCompanion(null);
@@ -162,10 +166,10 @@ public class Base {
         }
         try {
             client.close();
+            remove(client);
         } catch (IOException e) {
             log.warning(e.getMessage());
         }
-        remove(client);
     }
 
     public Deque<AgentInterface> getQueueOfWaitingAgents() {
@@ -177,6 +181,18 @@ public class Base {
     public Deque<UserInterfece> getQueueOfWaitingUsers() {
         synchronized (queueOfWaitingUsers) {
             return queueOfWaitingUsers;
+        }
+    }
+
+    public void removeFirstAgentFromQueue() {
+        synchronized (queueOfWaitingAgents) {
+            queueOfWaitingAgents.removeFirst();
+        }
+    }
+
+    public void removeFirstUserFromQueue() {
+        synchronized (queueOfWaitingUsers) {
+            queueOfWaitingUsers.removeFirst();
         }
     }
 }

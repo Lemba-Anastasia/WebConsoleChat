@@ -20,12 +20,13 @@ public class Server implements Runnable {
     private BufferedReader in = null;
     private PrintWriter out = null;
     private ServerSocket servers = null;
-    private Socket serverSocket = null;
+    private Socket serverSocket = null;//WTF? why this fields is not used? u can just delete
     private List<MonoThreadClientHandler> threadClientHandlerList;
     private List<Thread> threadList;
     private ServerSocket server;
     private Socket socket;
-
+    @Autowired
+    Base base;
     public Server() {
         threadClientHandlerList = new ArrayList<>(10);
         threadList = new ArrayList<>();
@@ -33,8 +34,11 @@ public class Server implements Runnable {
             server = new ServerSocket(1357);
         } catch (IOException e) {
             log.warning(e.getMessage());
-        }
-
+        }//обьяснить почему не сработала вставка сервера в Application? потому чо бля когда запускается маин,
+        // тогда идёт инициацизация, а загрузка полей класса, идёт когда класс загружается в память/создается его обьект,
+        //т.е. пробовали использовать бин, который поле класса, который запусакет инициализвацию бинов(странно,
+        // да и с базой это прокатило)
+        new Thread(this).start();
     }
 
     public void run() {
@@ -49,7 +53,7 @@ public class Server implements Runnable {
             try {
                 monoThreadClientHandler = new MonoThreadClientHandler(socket,
                         new BufferedReader(new InputStreamReader(socket.getInputStream())),
-                        new PrintWriter(socket.getOutputStream(), true));
+                        new PrintWriter(socket.getOutputStream(), true), base);
             } catch (IOException e) {
                 log.warning(e.getMessage());
             }

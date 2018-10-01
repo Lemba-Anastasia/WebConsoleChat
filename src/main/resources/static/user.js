@@ -27,8 +27,8 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function sendName() {
-    var data = JSON.stringify({'name': $("#name").val()})
+function sendMessage() {
+    var data = JSON.stringify({'message': $("#message").val()})
     ws.send(data);
 }
 
@@ -42,5 +42,5 @@ $(function () {
     });
     $( "#connect" ).click(function() { connect(); });
     $( "#disconnect" ).click(function() { disconnect(); });
-    $( "#send" ).click(function() { sendName(); });
+    $( "#send" ).click(function() { sendMessage(); });
 });

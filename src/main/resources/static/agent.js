@@ -28,8 +28,8 @@ function disconnect() {
     console.log("Disconnected");
 }
 
-function sendName() {
-    var data = JSON.stringify({'name': $("#name").val()})
+function sendMessage() {
+    var data = JSON.stringify({'message': $("#message").val()})
     ws.send(data);
 }
 
@@ -48,6 +48,6 @@ $(function () {
         disconnect();
     });
     $("#send").click(function () {
-        sendName();
+        sendMessage();
     });
 });

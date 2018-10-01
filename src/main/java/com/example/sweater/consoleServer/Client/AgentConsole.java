@@ -2,6 +2,7 @@ package com.example.sweater.consoleServer.Client;
 
 import com.example.sweater.Client.AgentInterface;
 import com.example.sweater.Client.Client;
+import com.example.sweater.Client.UserInterfece;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -9,15 +10,17 @@ import java.net.Socket;
 public class AgentConsole implements AgentInterface {
     private String name;
     private Socket socket;
-    private UserConsole companion;
+    private UserInterfece companion;
+
     public AgentConsole(String name, Socket socket) {
-        this.name=name;
-        this.socket=socket;
-        companion=null;
+        this.name = name;
+        this.socket = socket;
+        companion = null;
     }
+
     @Override
-    public boolean isBusy(){
-        return (companion!=null);
+    public boolean isBusy() {
+        return (companion != null);
     }
 
     public Socket getSocket() {
@@ -26,16 +29,18 @@ public class AgentConsole implements AgentInterface {
 
     @Override
     public void sendMessage(String message) throws IOException {
-        if(companion!=null){
-            companion.getSocket().getOutputStream().write((name+": "+message+"\n").getBytes());
-            companion.getSocket().getOutputStream().flush();
+        if (companion instanceof UserConsole) {
+            ((UserConsole)companion).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
+            ((UserConsole)companion).getSocket().getOutputStream().flush();
+        }else{
+            companion.sendMessageToMyself(name + ": " + message);
         }
     }
 
     @Override
     public void sendMessageToMyself(String message) throws IOException {
         try {
-            socket.getOutputStream().write((message+"\n").getBytes());
+            socket.getOutputStream().write((message + "\n").getBytes());
             socket.getOutputStream().flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -54,7 +59,7 @@ public class AgentConsole implements AgentInterface {
     }
 
     @Override
-    public String getName(){
+    public String getName() {
         return name;
     }
 
@@ -65,7 +70,7 @@ public class AgentConsole implements AgentInterface {
 
     @Override
     public void setCompanion(Client companion) {
-        this.companion=(UserConsole) companion;
+        this.companion = (UserInterfece) companion;
     }
 
     @Override
@@ -77,8 +82,9 @@ public class AgentConsole implements AgentInterface {
         if (name != agent.getName()) return false;
         return socket == agent.getSocket();
     }
-    public void sendByfMessage(String message) throws IOException{
-        socket.getOutputStream().write((message+"\n").getBytes());
+
+    public void sendByfMessage(String message) throws IOException {
+        socket.getOutputStream().write((message + "\n").getBytes());
         socket.getOutputStream().flush();
     }
 }

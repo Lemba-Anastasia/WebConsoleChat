@@ -8,7 +8,7 @@ import java.io.IOException;
 public class User implements UserInterfece {
     private WebSocketSession socketSession;
     private String name;
-    private Agent companion;
+    private AgentInterface companion;
     private String waitingPutMessages;
 
     public User(String clientName, WebSocketSession session) {
@@ -27,7 +27,7 @@ public class User implements UserInterfece {
     }
 
     @Override
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
         sendMessageToMyself(name + ": " + message);
         companion.sendMessageToMyself(name + ": " + message);
     }
@@ -68,7 +68,7 @@ public class User implements UserInterfece {
 
     @Override
     public void setCompanion(Client companion) {
-        this.companion = (Agent) companion;
+        this.companion = (AgentInterface) companion;//я вижу косяк
     }
 
     public boolean isWaiting() {
