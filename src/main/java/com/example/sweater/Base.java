@@ -1,8 +1,6 @@
 package com.example.sweater;
 
 import com.example.sweater.Client.*;
-import com.example.sweater.consoleServer.Client.AgentConsole;
-import com.example.sweater.consoleServer.Client.UserConsole;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketSession;
 

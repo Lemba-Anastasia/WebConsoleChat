@@ -49,12 +49,12 @@ public class Agent implements AgentInterface {
 
     @Override
     public Client getCompanion() {
-        return (Client) companion;
+        return companion;
     }
 
     @Override
     public void setCompanion(Client companion) {
-        this.companion = (User) companion;
+        this.companion = (UserInterfece) companion;
     }
 
 }

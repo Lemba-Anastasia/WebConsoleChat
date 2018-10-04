@@ -1,12 +1,11 @@
 package com.example.sweater.consoleServer;
 
 import com.example.sweater.Base;
+import com.example.sweater.Client.AgentInterface;
 import com.example.sweater.Client.Client;
+import com.example.sweater.Client.UserInterfece;
 import com.example.sweater.consoleServer.Client.AgentConsole;
 import com.example.sweater.consoleServer.Client.UserConsole;
-//import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,7 +13,6 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 public class MonoThreadClientHandler implements Runnable{
-    //private static final Logger log = Logger.getLogger(MonoThreadClientHandler.class);
     private static final Logger log = Logger.getLogger(String.valueOf(MonoThreadClientHandler.class));
     private Socket socket;
     private BufferedReader in;
@@ -56,13 +54,13 @@ public class MonoThreadClientHandler implements Runnable{
     }
 
     public void onMessageReseived(String message, Client client) throws IOException {
-        UserConsole freeUser = null;
-        AgentConsole freeAgent;
+        UserInterfece freeUser = null;
+        AgentInterface freeAgent;
         if (!client.isBusy()) {
             client.sendMessageToMyself("server: Waiting for a companion");
             if (client instanceof UserConsole) {
                 base.addToQWaitingUsers((UserConsole) client);
-                if ((freeAgent = (AgentConsole) base.getQueueOfWaitingAgents().peekFirst()) != null) {
+                if ((freeAgent = base.getQueueOfWaitingAgents().peekFirst()) != null) {
                     client.setCompanion(freeAgent);
                     freeAgent.setCompanion(client);
                     freeUser = (UserConsole) client;

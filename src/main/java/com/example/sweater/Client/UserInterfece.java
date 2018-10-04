@@ -8,4 +8,5 @@ import java.net.Socket;
 public interface UserInterfece extends Client {
     String getWaitingMessages();
     void clearBuffer();
+    boolean isWaiting();
 }

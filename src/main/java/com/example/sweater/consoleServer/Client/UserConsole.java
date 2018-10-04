@@ -52,7 +52,7 @@ public class UserConsole implements UserInterfece {
 
     @Override
     public void setCompanion(Client companion) {
-        this.companion= (AgentConsole) companion;
+        this.companion= (AgentInterface) companion;
     }
 
     public Socket getSocket() {
@@ -78,6 +78,7 @@ public class UserConsole implements UserInterfece {
         return waitingPutMessages;
     }
 
+    @Override
     public boolean isWaiting(){
         return !waitingPutMessages.equals("");
     }

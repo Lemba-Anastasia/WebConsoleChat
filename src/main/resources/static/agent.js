@@ -50,4 +50,10 @@ $(function () {
     $("#send").click(function () {
         sendMessage();
     });
+    $("#closeCurrentChat").click(function () {
+        //sendMessage();
+    });
+    $("#switchUser").click(function () {
+        //();
+    });
 });

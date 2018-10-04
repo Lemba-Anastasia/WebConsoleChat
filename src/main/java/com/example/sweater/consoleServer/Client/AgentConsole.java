@@ -45,7 +45,6 @@ public class AgentConsole implements AgentInterface {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -81,10 +80,5 @@ public class AgentConsole implements AgentInterface {
 
         if (name != agent.getName()) return false;
         return socket == agent.getSocket();
-    }
-
-    public void sendByfMessage(String message) throws IOException {
-        socket.getOutputStream().write((message + "\n").getBytes());
-        socket.getOutputStream().flush();
     }
 }

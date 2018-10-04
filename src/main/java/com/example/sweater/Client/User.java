@@ -66,7 +66,7 @@ public class User implements UserInterfece {
     public void setCompanion(Client companion) {
         this.companion = (AgentInterface) companion;//я вижу косяк
     }
-
+    @Override
     public boolean isWaiting() {
         return !waitingPutMessages.equals("");
     }
