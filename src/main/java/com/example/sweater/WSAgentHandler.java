@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 @Component
-public class SocketHandlerAgent extends TextWebSocketHandler {
-    private static final Logger log = Logger.getLogger(String.valueOf(SocketHandlerAgent.class));
+public class WSAgentHandler extends TextWebSocketHandler {
+    private static final Logger log = Logger.getLogger(String.valueOf(WSAgentHandler.class));
     @Autowired
     MessageHandler messageHandler;
     @Override

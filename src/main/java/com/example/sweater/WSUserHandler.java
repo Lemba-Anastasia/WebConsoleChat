@@ -1,5 +1,4 @@
 package com.example.sweater;
-import com.example.sweater.Client.User;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,10 +8,9 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.Map;
-import java.util.logging.Logger;
 
 @Component
-public class SocketHandlerUser extends TextWebSocketHandler {
+public class WSUserHandler extends TextWebSocketHandler {
     @Autowired
     MessageHandler messageHandler;
 

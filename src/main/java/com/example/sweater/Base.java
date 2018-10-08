@@ -4,6 +4,7 @@ import com.example.sweater.Client.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketSession;
 
+import javax.jws.soap.SOAPBinding;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -41,7 +42,6 @@ public class Base {
         synchronized (queueOfWaitingAgents) {
             if (queueOfWaitingAgents.stream().noneMatch(agent1 -> agent1 == agent)) {
                 queueOfWaitingAgents.add(agent);
-                agent.setCompanion(null);
             }
         }
     }
@@ -77,14 +77,15 @@ public class Base {
             UserInterfece freeUser = queueOfWaitingUsers.peekFirst();
             if (freeUser != null) {
                 AgentInterface freeAgent;
-                queueOfWaitingUsers.removeFirst();
+                queueOfWaitingUsers.remove(freeUser);
                 synchronized (queueOfWaitingAgents) {
                     freeAgent = queueOfWaitingAgents.peekFirst();
                     freeUser.setCompanion(freeAgent);
-                    freeAgent.setCompanion(freeUser);
-                    queueOfWaitingAgents.removeFirst();
+                    freeAgent.getUsers().add(freeUser);
+                    freeAgent.getUsers().add(freeUser);
+                    if (freeAgent.isBusy())
+                        queueOfWaitingAgents.remove(freeAgent);
                 }
-                freeUser.getCompanion().setCompanion(freeUser);
                 try {
                     log.info("---------send waiting mesage");
                     freeUser.sendMessageToMyself("server: You are connected to " + freeAgent.getName());
@@ -97,20 +98,19 @@ public class Base {
         }
     }
 
-    public void leaveChat(Client client) throws IOException {
-        if (client.getCompanion() != null) {
-            try {
-                client.getCompanion().sendMessageToMyself("server: Companion left the chat");
-            } catch (IOException e) {
-                log.warning(e.getMessage());
+    public void leaveChat(Client disconnectedClient) throws IOException {
+        if (disconnectedClient instanceof AgentInterface) {
+            ((AgentInterface) disconnectedClient).getUsers().forEach(userInterfece -> userInterfece.setCompanion(null));
+            //TODO: отправку сообщения юзеру о то м что агент отключился
+            //disconnectedClient.getCompanion().sendMessageToMyself("server: Companion left the chat");
+            ((AgentInterface) disconnectedClient).getUsers().clear();
+        } else if (disconnectedClient instanceof UserInterfece) {
+            AgentInterface agentInterface = ((UserInterfece) disconnectedClient).getCompanion();
+            agentInterface.getUsers().remove(disconnectedClient);
+            ((UserInterfece) disconnectedClient).setCompanion(null);
+            if (!agentInterface.isBusy()) {
+                queueOfWaitingAgents.add(agentInterface);
             }
-            if (client instanceof UserInterfece) {
-                queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
-            } else {
-                queueOfWaitingAgents.add((AgentInterface) client);
-            }
-            client.getCompanion().setCompanion(null);
-            client.setCompanion(null);
             chatCreation();
         }
     }
@@ -143,36 +143,36 @@ public class Base {
         return null;
     }
 
-    public void exit(Object o) {
-        Client client;
-        if (o instanceof WebSocketSession) {
-            client = searchClientBySession((WebSocketSession) o);
-        } else {
-            client = (Client) o;
-        }
-        if(client.getCompanion()!=null){
-            if (client instanceof UserInterfece) {
-                queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
-                chatCreation();
-            } else {
-                client.getCompanion().setCompanion(null);
-            }
-            log.info(client.getName() + " left the chat");
-            try {
-                client.getCompanion().sendMessageToMyself(" Companion disconnected");
-                client.close();
-                remove(client);
-            } catch (IOException e) {
-                log.warning(e.getMessage());
-            }
-        }else {
-            try {
-                client.close();
-            } catch (IOException e) {
-                log.warning(e.getMessage());
-            }
-        }
-    }
+//    public void exit(Object o) {
+//        Client client;
+//        if (o instanceof WebSocketSession) {
+//            client = searchClientBySession((WebSocketSession) o);
+//        } else {
+//            client = (Client) o;
+//        }
+//        if (client.getCompanion() != null) {
+//            if (client instanceof UserInterfece) {
+//                queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
+//                chatCreation();
+//            } else {
+//                client.getCompanion().setCompanion(null);
+//            }
+//            log.info(client.getName() + " left the chat");
+//            try {
+//                client.getCompanion().sendMessageToMyself(" Companion disconnected");
+//                client.close();
+//                remove(client);
+//            } catch (IOException e) {
+//                log.warning(e.getMessage());
+//            }
+//        } else {
+//            try {
+//                client.close();
+//            } catch (IOException e) {
+//                log.warning(e.getMessage());
+//            }
+//        }
+//    }
 
     public Deque<AgentInterface> getQueueOfWaitingAgents() {
         synchronized (queueOfWaitingAgents) {

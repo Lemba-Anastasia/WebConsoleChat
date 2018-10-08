@@ -19,13 +19,13 @@ public class BeanConfiguration {
     }
 
     @Bean
-    SocketHandlerAgent socketHandlerAgent(){
-        return new SocketHandlerAgent();
+    WSAgentHandler socketHandlerAgent(){
+        return new WSAgentHandler();
     }
 
     @Bean
-    SocketHandlerUser socketHandlerUser(){
-        return new SocketHandlerUser();
+    WSUserHandler socketHandlerUser(){
+        return new WSUserHandler();
     }
 
 }

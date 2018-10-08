@@ -19,6 +19,26 @@ function connect() {
     };
     setConnected(true);
 }
+function addNewTab(userId, userName) {
+    $(".nav-tabs").append('<li><a data-toggle="tab" id="' + userId + 'navtab" href="#' + userId + 'tab">' + userName + '</a></li>\n'
+    );
+    createNewChatWindow(userId)
+}
+
+function createNewChatWindow(userId) {
+    var a =
+        ' <div id="' + userId + 'tab" class="tab-pane fade">' +
+        '   <ul id="' + userId + 'Messages" class="messages">\n' +
+        '    </ul>\n' +
+        '    <div class="bottom_wrapper clearfix">\n' +
+        '        <div class="message_input_wrapper"><input class="message_input" id="' + userId + 'Input" placeholder="Type your message here..."/></div>\n' +
+        '        <div class="send_message" id="' + userId + 'Send" onclick="sendMessage(\'' + userId + '\')">\n' +
+        '            <div class="text">Send</div>\n' +
+        '        </div>\n' +
+        '    </div>' +
+        '</div>';
+    $(".col-md-12").append(a);
+}
 
 function disconnect() {
     if (ws != null) {
@@ -33,8 +53,13 @@ function sendMessage() {
     ws.send(data);
 }
 
+
 function showGreeting(message) {
-    $("#greetings").append("<tr><td> " + message + "</td></tr>");
+    if(message==="NEWCHAT"){
+        addNewTab("","");//+ obj.id, obj.newUserName);//TODO
+    }else{
+        $("#greetings").append("<tr><td> " + message + "</td></tr>");
+    }
 }
 
 $(function () {
@@ -51,9 +76,6 @@ $(function () {
         sendMessage();
     });
     $("#closeCurrentChat").click(function () {
-        //sendMessage();
-    });
-    $("#switchUser").click(function () {
-        //();
+        //closeChat();
     });
 });

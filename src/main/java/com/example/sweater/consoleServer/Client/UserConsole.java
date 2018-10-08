@@ -3,6 +3,7 @@ package com.example.sweater.consoleServer.Client;
 import com.example.sweater.Client.AgentInterface;
 import com.example.sweater.Client.Client;
 import com.example.sweater.Client.UserInterfece;
+import com.example.sweater.IdCounter;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -12,11 +13,13 @@ public class UserConsole implements UserInterfece {
     private Socket socket;
     private AgentInterface companion;
     private String waitingPutMessages;
+    private int id;
     public UserConsole(String name, Socket socket) {
         this.name=name;
         this.socket=socket;
         companion=null;
         waitingPutMessages="";
+        id= IdCounter.getInstance().getId();
     }
 
     @Override
@@ -36,6 +39,11 @@ public class UserConsole implements UserInterfece {
     }
 
     @Override
+    public int getID(){
+        return id;
+    }
+
+    @Override
     public boolean hasConnectionObject(Object o) {
         return socket.equals(o);
     }
@@ -51,7 +59,7 @@ public class UserConsole implements UserInterfece {
     }
 
     @Override
-    public void setCompanion(Client companion) {
+    public void setCompanion(AgentInterface companion) {
         this.companion= (AgentInterface) companion;
     }
 
@@ -59,14 +67,17 @@ public class UserConsole implements UserInterfece {
         return socket;
     }
     @Override
-    public Client getCompanion(){
+    public AgentInterface getCompanion(){
         return companion;
     }
+
+
     @Override
     public String getName(){
         return name;
     }
 
+    @Override
     public void setBufferMessages(String m){
         waitingPutMessages+=name+": "+m+"\n";
     }

@@ -1,18 +1,17 @@
 package com.example.sweater.consoleServer;
 
 import com.example.sweater.Base;
-import com.example.sweater.Client.AgentInterface;
 import com.example.sweater.Client.Client;
-import com.example.sweater.Client.UserInterfece;
 import com.example.sweater.consoleServer.Client.AgentConsole;
 import com.example.sweater.consoleServer.Client.UserConsole;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-public class MonoThreadClientHandler implements Runnable{
+public class MonoThreadClientHandler implements Runnable {
     private static final Logger log = Logger.getLogger(String.valueOf(MonoThreadClientHandler.class));
     private Socket socket;
     private BufferedReader in;
@@ -46,38 +45,33 @@ public class MonoThreadClientHandler implements Runnable{
 
     private void handlingMessage(String m) {
         try {
-            if (client != null) onMessageReseived(m, client);
-            else out.println("server: You are not registered");
+            if (client != null) {
+                if (client instanceof AgentConsole)
+                    onMessageReseivedFromAgent(m, (AgentConsole) client);
+                else if (client instanceof UserConsole)
+                    onMessageReseivedFromUser(m, (UserConsole) client);
+            } else out.println("server: You are not registered");
         } catch (IOException e) {
             log.warning(e.getMessage());
         }
     }
 
-    public void onMessageReseived(String message, Client client) throws IOException {
-        UserInterfece freeUser = null;
-        AgentInterface freeAgent;
+    public void onMessageReseivedFromUser(String message, UserConsole client) throws IOException {
         if (!client.isBusy()) {
             client.sendMessageToMyself("server: Waiting for a companion");
-            if (client instanceof UserConsole) {
-                base.addToQWaitingUsers((UserConsole) client);
-                if ((freeAgent = base.getQueueOfWaitingAgents().peekFirst()) != null) {
-                    client.setCompanion(freeAgent);
-                    freeAgent.setCompanion(client);
-                    freeUser = (UserConsole) client;
-                    freeUser.sendMessageToMyself("server: You are connected to " + freeAgent.getName());
-                    log.info(client.getName()+"---------" + freeUser.getWaitingMessages() + message);
-                    freeUser.sendMessage(freeUser.getWaitingMessages() + message);
-                    if (freeUser.isWaiting())
-                        freeUser.clearBuffer();
-                    base.removeFirstAgentFromQueue();
-                    base.removeFirstUserFromQueue();
-                } else {
-                    ((UserConsole) client).setBufferMessages(message);
-                }
-            }
+            client.setBufferMessages(message);
+            base.chatCreation();
+            client.sendMessage("NEWCHAT");
         } else {
             client.sendMessage(message);
-            log.info(client.getName()+"---------" + message);
+            log.info("---------" + message);
+        }
+    }
+
+    public void onMessageReseivedFromAgent(String message, AgentConsole client) throws IOException {
+        if (client.isBusy()) {
+            client.sendMessage(message);
+            log.info("---------" + message);
         }
     }
 
@@ -112,7 +106,7 @@ public class MonoThreadClientHandler implements Runnable{
 
         } else if (m.matches("/close(\\s*)")) {
             client.sendMessageToMyself("You have left");
-            base.exit(client);
+            //TODO: base.exit(client);
         } else {
             if (client != null)
                 client.sendMessageToMyself("Uncorrect command");

@@ -1,22 +1,25 @@
 package com.example.sweater.Client;
 
+import com.example.sweater.IdCounter;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
-public class User implements UserInterfece {
+public class WebUser implements UserInterfece {
     private WebSocketSession socketSession;
     private String name;
     private AgentInterface companion;
     private String waitingPutMessages;
+    private int id;
 
-    public User(String clientName, WebSocketSession session) {
+    public WebUser(String clientName, WebSocketSession session) {
         this.name = clientName;
         this.socketSession = session;
         waitingPutMessages = "";
+        id= IdCounter.getInstance().getId();
     }
-
+    @Override
     public void setBufferMessages (String m) {
         waitingPutMessages += name + ": " + m + "\n";
     }
@@ -30,6 +33,11 @@ public class User implements UserInterfece {
     public void sendMessage(String message) throws IOException {
         sendMessageToMyself(name + ": " + message);
         companion.sendMessageToMyself(name + ": " + message);
+    }
+
+    @Override
+    public int getID(){
+        return id;
     }
 
     @Override
@@ -58,12 +66,12 @@ public class User implements UserInterfece {
     }
 
     @Override
-    public Client getCompanion() {
-        return (Client) companion;
+    public AgentInterface getCompanion() {
+        return (AgentInterface) companion;
     }
 
     @Override
-    public void setCompanion(Client companion) {
+    public void setCompanion(AgentInterface companion) {
         this.companion = (AgentInterface) companion;//я вижу косяк
     }
     @Override

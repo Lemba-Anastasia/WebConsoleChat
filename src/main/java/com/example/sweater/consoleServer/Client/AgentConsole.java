@@ -6,34 +6,36 @@ import com.example.sweater.Client.UserInterfece;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AgentConsole implements AgentInterface {
     private String name;
     private Socket socket;
-    private UserInterfece companion;
+    private List<UserInterfece> companionList;
 
     public AgentConsole(String name, Socket socket) {
         this.name = name;
         this.socket = socket;
-        companion = null;
+        companionList=new ArrayList<>();
     }
 
     @Override
     public boolean isBusy() {
-        return (companion != null);
+        return (!companionList.isEmpty());
     }
 
     public Socket getSocket() {
         return socket;
     }
 
-    @Override
     public void sendMessage(String message) throws IOException {
-        if (companion instanceof UserConsole) {
-            ((UserConsole)companion).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
-            ((UserConsole)companion).getSocket().getOutputStream().flush();
+        UserInterfece u=companionList.get(0);
+        if (u instanceof UserConsole) {
+            ((UserConsole)u).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
+            ((UserConsole)u).getSocket().getOutputStream().flush();
         }else{
-            companion.sendMessageToMyself(name + ": " + message);
+            u.sendMessageToMyself(name + ": " + message);
         }
     }
 
@@ -54,7 +56,6 @@ public class AgentConsole implements AgentInterface {
 
     @Override
     public void close() throws IOException {
-
     }
 
     @Override
@@ -63,13 +64,8 @@ public class AgentConsole implements AgentInterface {
     }
 
     @Override
-    public Client getCompanion() {
-        return companion;
-    }
-
-    @Override
-    public void setCompanion(Client companion) {
-        this.companion = (UserInterfece) companion;
+    public List<UserInterfece> getUsers() {
+        return companionList;
     }
 
     @Override
