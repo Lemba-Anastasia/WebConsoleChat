@@ -59,7 +59,7 @@ public class UserConsole implements UserInterfece {
 
     @Override
     public void setCompanion(AgentInterface companion) {
-        this.companion= (AgentInterface) companion;
+        this.companion= companion;
     }
 
     public Socket getSocket() {
@@ -95,7 +95,7 @@ public class UserConsole implements UserInterfece {
         if (o == null || getClass() != o.getClass()) return false;
         UserConsole user = (UserConsole) o;
 
-        if (name != user.getName()) return false;
+        if (!name.equals(user.getName())) return false;
         return socket == user.getSocket();
     }
 }

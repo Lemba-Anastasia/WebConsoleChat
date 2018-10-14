@@ -53,6 +53,7 @@ public class AgentConsole implements AgentInterface {
 
     @Override
     public void close() throws IOException {
+        socket.close();
     }
 
     @Override
@@ -70,7 +71,7 @@ public class AgentConsole implements AgentInterface {
         if (o == null || getClass() != o.getClass()) return false;
         AgentConsole agent = (AgentConsole) o;
 
-        if (name != agent.getName()) return false;
+        if (!name.equals(agent.getName())) return false;
         return socket == agent.getSocket();
     }
 

@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 public class WSAgentHandler extends TextWebSocketHandler {
     private static final Logger log = Logger.getLogger(String.valueOf(WSAgentHandler.class));
     @Autowired
-    MessageHandler messageHandler;
+    MessageHandlerForWebAgent messageHandler;
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         Map<String, String> value = new Gson().fromJson(message.getPayload(), Map.class);

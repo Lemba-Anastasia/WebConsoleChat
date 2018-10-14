@@ -40,6 +40,7 @@ public class MonoThreadClientHandler implements Runnable {
             }
         } catch (IOException e) {
             log.warning(e.getMessage());
+            base.exit(client);
         }
     }
 
@@ -62,7 +63,7 @@ public class MonoThreadClientHandler implements Runnable {
             client.sendMessageToMyself("server: Waiting for a companion");
             client.setBufferMessages(message);
             base.chatCreation();
-            log.info("---------" + message + " from user " + client.getName());
+            log.info("---------" + message + " from user " + client);
         } else {
             client.sendMessage(client.getID() + "::" + client.getName() + ": " + message);
             log.info("---------" + message);
@@ -72,8 +73,7 @@ public class MonoThreadClientHandler implements Runnable {
     public void onMessageReseivedFromAgent(String message, AgentConsole client) throws IOException {
         log.info("---------" + message + " from agent " + client);
         if (client.isBusy()) {
-            String[] strings = message.split("::");
-            client.sendMessage(strings[1]);
+            client.sendMessage(message);
         }
     }
 

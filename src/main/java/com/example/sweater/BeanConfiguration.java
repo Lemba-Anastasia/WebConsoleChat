@@ -14,8 +14,13 @@ public class BeanConfiguration {
     Server server(){return  new Server();}
 
     @Bean
-    MessageHandler messageHandler(){
-        return new MessageHandler();
+    MessageHandlerForWebAgent messageHandlerForWebAgent(){
+        return new MessageHandlerForWebAgent();
+    }
+
+    @Bean
+    MessageHandlerForWebUser messageHandlerForWebUser(){
+        return new MessageHandlerForWebUser();
     }
 
     @Bean

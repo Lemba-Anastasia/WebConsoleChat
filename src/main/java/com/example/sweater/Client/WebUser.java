@@ -67,7 +67,7 @@ public class WebUser implements UserInterfece {
 
     @Override
     public AgentInterface getCompanion() {
-        return (AgentInterface) companion;
+        return companion;
     }
 
     @Override

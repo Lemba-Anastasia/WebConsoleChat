@@ -1,7 +1,6 @@
 package com.example.sweater.consoleServer;
 
 import com.example.sweater.Base;
-import com.example.sweater.MessageHandler;
 //import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,10 +16,6 @@ import java.util.logging.Logger;
 
 public class Server implements Runnable {
     private static final Logger log =Logger.getLogger(String.valueOf(Server.class));
-    private BufferedReader in = null;
-    private PrintWriter out = null;
-    private ServerSocket servers = null;
-    private Socket serverSocket = null;
     private List<MonoThreadClientHandler> threadClientHandlerList;
     private List<Thread> threadList;
     private ServerSocket server;

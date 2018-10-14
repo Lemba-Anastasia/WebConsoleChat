@@ -108,7 +108,6 @@ public class Base {
     }
 
     public void leaveCurrentChat(int idCompanion, WebAgent webAgent) {
-        List<UserInterfece> userInterfeceList = webAgent.getUsers();
         webAgent.getUsers().forEach(userInterfece -> {
                     if (userInterfece.getID() == idCompanion) {
                         try {
@@ -259,30 +258,6 @@ public class Base {
                     log.warning(e.getMessage());
                 }
             }
-        }
-    }
-
-    public Deque<AgentInterface> getQueueOfWaitingAgents() {
-        synchronized (queueOfWaitingAgents) {
-            return queueOfWaitingAgents;
-        }
-    }
-
-    public Deque<UserInterfece> getQueueOfWaitingUsers() {
-        synchronized (queueOfWaitingUsers) {
-            return queueOfWaitingUsers;
-        }
-    }
-
-    public void removeFirstAgentFromQueue() {
-        synchronized (queueOfWaitingAgents) {
-            queueOfWaitingAgents.removeFirst();
-        }
-    }
-
-    public void removeFirstUserFromQueue() {
-        synchronized (queueOfWaitingUsers) {
-            queueOfWaitingUsers.removeFirst();
         }
     }
 }

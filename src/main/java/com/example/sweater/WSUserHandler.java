@@ -12,21 +12,21 @@ import java.util.Map;
 @Component
 public class WSUserHandler extends TextWebSocketHandler {
     @Autowired
-    MessageHandler messageHandler;
+    MessageHandlerForWebUser messageHandlerForWebUser;
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         Map<String, String> value = new Gson().fromJson(message.getPayload(), Map.class);
         String sendingMessage = value.get("message");
-        if (sendingMessage.charAt(0) == '/') messageHandler.handlingCommandsMessage(sendingMessage, session);
+        if (sendingMessage.charAt(0) == '/') messageHandlerForWebUser.handlingCommandsMessage(sendingMessage, session);
         else {
-            messageHandler.handlingMessage(sendingMessage, session);
+            messageHandlerForWebUser.handlingMessage(sendingMessage, session);
         }
     }
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        messageHandler.handlingCommandsMessage("/close ",session);
+        messageHandlerForWebUser.handlingCommandsMessage("/close ",session);
     }
 
 }
