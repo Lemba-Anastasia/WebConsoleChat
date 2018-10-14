@@ -28,7 +28,7 @@ public class WSAgentHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
-        messageHandler.handlingMessage("/close ",session);
+        messageHandler.handlingCommandsMessage("/close ",session);
     }
 }
 

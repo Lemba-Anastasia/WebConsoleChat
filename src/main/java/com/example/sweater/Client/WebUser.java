@@ -21,7 +21,7 @@ public class WebUser implements UserInterfece {
     }
     @Override
     public void setBufferMessages (String m) {
-        waitingPutMessages += name + ": " + m + "\n";
+        waitingPutMessages += id + "::"+name + ": " + m + "\n";
     }
 
     @Override
@@ -31,8 +31,8 @@ public class WebUser implements UserInterfece {
 
     @Override
     public void sendMessage(String message) throws IOException {
-        sendMessageToMyself(name + ": " + message);
-        companion.sendMessageToMyself(name + ": " + message);
+        sendMessageToMyself(message);
+        companion.sendMessageToMyself( message);
     }
 
     @Override
@@ -72,12 +72,9 @@ public class WebUser implements UserInterfece {
 
     @Override
     public void setCompanion(AgentInterface companion) {
-        this.companion = (AgentInterface) companion;//я вижу косяк
+        this.companion = companion;
     }
-    @Override
-    public boolean isWaiting() {
-        return !waitingPutMessages.equals("");
-    }
+
     @Override
     public String getWaitingMessages() {
         return waitingPutMessages;

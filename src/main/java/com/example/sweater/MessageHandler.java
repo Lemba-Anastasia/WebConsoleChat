@@ -22,7 +22,7 @@ public class MessageHandler {
             if (client != null) {
                 if (client instanceof WebAgent)
                     onMessageReseivedFromAgent(sendingMessage, (WebAgent) client);
-                else if(client instanceof WebUser)
+                else if (client instanceof WebUser)
                     onMessageReseivedFromUser(sendingMessage, (WebUser) client);
             } else {
                 webSession.sendMessage(new TextMessage("server: You are not registered"));
@@ -36,7 +36,7 @@ public class MessageHandler {
         if (m.matches("/reg(\\s+)user(\\s+)\\w+")) {
             UserInterfece u;
             if ((u = base.searchUserBySession(session)) != null) {
-                u.sendMessageToMyself("server: You are aleady registered");
+                u.sendMessageToMyself("server: You are already registered");
             } else {
                 String clientName = m.split("/reg(\\s+)user(\\s+)")[1];
                 log.info("UserNAME:" + clientName);
@@ -49,7 +49,7 @@ public class MessageHandler {
             AgentInterface a;
             int maxCountOfUsers;
             if ((a = base.searchAgentOnSession(session)) != null) {
-                a.sendMessageToMyself("server: You are aleady registered");
+                a.sendMessageToMyself("server: You are already registered");
             } else {
                 String clientName = m.split("/reg(\\s+)agent(\\s+)")[1].split("(\\s+)\\d+")[0];
                 maxCountOfUsers = parseInt(m.split("/reg(\\s+)agent(\\s+)\\w+(\\s+)")[1]);
@@ -59,7 +59,6 @@ public class MessageHandler {
                 webAgent.sendMessageToMyself("server: You have registered");
                 base.addToQWaitingAgent(webAgent);
                 base.chatCreation();
-                webAgent.sendMessageToMyself("NEWCHAT");
             }
         } else if (m.matches("/leave(\\s*)")) {
             Client client;
@@ -67,32 +66,42 @@ public class MessageHandler {
                 client.sendMessageToMyself("server: You left the chat with the previous companion");
                 base.leaveChat(client);
             } else {
-                session.sendMessage(new TextMessage("server: register please"));
+                session.sendMessage(new TextMessage("server: to register please"));
             }
         } else if (m.matches("/close(\\s*)")) {
-            //TODO: base.exit(session);
-        } else {
-            session.sendMessage(new TextMessage("server: Uncorrect command"));
+            base.exit(session);
+        } else if(m.matches("/leaveCurrentChat:(\\d+)")){
+            Client client;
+            if ((client = base.searchClientBySession(session)) != null) {
+                base.leaveCurrentChat(Integer.parseInt(m.split(":")[1]), (WebAgent) client);
+            } else {
+                session.sendMessage(new TextMessage("server: to register please"));
+            }
+
+        }else {
+            session.sendMessage(new TextMessage("server: Uncorrected command"));
         }
     }
 
     public void onMessageReseivedFromUser(String message, WebUser client) throws IOException {
         if (!client.isBusy()) {
-            client.sendMessageToMyself("NEWCHAT");
+            base.addToQWaitingUsers(client);
             client.sendMessageToMyself("server: Waiting for a companion");
             client.setBufferMessages(message);
+            client.sendMessageToMyself(client.getWaitingMessages());
             base.chatCreation();
+            log.info("---------" + message + " from user " + client.getName());
         } else {
-            client.sendMessage(client.getID()+"::"+message);
+            client.sendMessage(client.getID() + "::" + client.getName() + ": " + message);
             log.info("---------" + message);
         }
     }
 
     public void onMessageReseivedFromAgent(String message, WebAgent client) throws IOException {
-        if (client.isBusy()) {
+        log.info("---------" + message + " from agent " + client);
+        if (!client.getUsers().isEmpty()) {
             String[] strings = message.split("::");
             client.sendMessage(strings[1], Integer.parseInt(strings[0]));
-            log.info("---------" + message);
         }
     }
 }

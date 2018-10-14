@@ -58,20 +58,22 @@ public class MonoThreadClientHandler implements Runnable {
 
     public void onMessageReseivedFromUser(String message, UserConsole client) throws IOException {
         if (!client.isBusy()) {
+            base.addToQWaitingUsers(client);
             client.sendMessageToMyself("server: Waiting for a companion");
             client.setBufferMessages(message);
             base.chatCreation();
-            client.sendMessage("NEWCHAT");
+            log.info("---------" + message + " from user " + client.getName());
         } else {
-            client.sendMessage(message);
+            client.sendMessage(client.getID() + "::" + client.getName() + ": " + message);
             log.info("---------" + message);
         }
     }
 
     public void onMessageReseivedFromAgent(String message, AgentConsole client) throws IOException {
+        log.info("---------" + message + " from agent " + client);
         if (client.isBusy()) {
-            client.sendMessage(message);
-            log.info("---------" + message);
+            String[] strings = message.split("::");
+            client.sendMessage(strings[1]);
         }
     }
 
@@ -106,7 +108,7 @@ public class MonoThreadClientHandler implements Runnable {
 
         } else if (m.matches("/close(\\s*)")) {
             client.sendMessageToMyself("You have left");
-            //TODO: base.exit(client);
+            base.exit(client);
         } else {
             if (client != null)
                 client.sendMessageToMyself("Uncorrect command");

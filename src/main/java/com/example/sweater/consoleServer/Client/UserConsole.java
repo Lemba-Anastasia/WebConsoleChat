@@ -1,7 +1,6 @@
 package com.example.sweater.consoleServer.Client;
 
 import com.example.sweater.Client.AgentInterface;
-import com.example.sweater.Client.Client;
 import com.example.sweater.Client.UserInterfece;
 import com.example.sweater.IdCounter;
 
@@ -25,10 +24,10 @@ public class UserConsole implements UserInterfece {
     @Override
     public void sendMessage(String message) throws IOException {
         if (companion instanceof AgentConsole) {
-            ((AgentConsole)companion).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
+            ((AgentConsole)companion).getSocket().getOutputStream().write((message + "\n").getBytes());
             ((AgentConsole)companion).getSocket().getOutputStream().flush();
         }else{
-            companion.sendMessageToMyself(name + ": " + message);
+            companion.sendMessageToMyself(message);
         }
     }
 
@@ -79,19 +78,15 @@ public class UserConsole implements UserInterfece {
 
     @Override
     public void setBufferMessages(String m){
-        waitingPutMessages+=name+": "+m+"\n";
+        waitingPutMessages+=id + "::"+name + ": " + m + "\n";
     }
+
     @Override
     public void clearBuffer(){waitingPutMessages="";}
 
     @Override
     public String getWaitingMessages() {
         return waitingPutMessages;
-    }
-
-    @Override
-    public boolean isWaiting(){
-        return !waitingPutMessages.equals("");
     }
 
     @Override

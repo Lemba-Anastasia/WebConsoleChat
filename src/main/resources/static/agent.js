@@ -1,4 +1,5 @@
 var ws;
+var currentChatId;
 
 function setConnected(connected) {
     $("#connect").prop("disabled", connected);
@@ -15,29 +16,55 @@ function setConnected(connected) {
 function connect() {
     ws = new WebSocket('ws://localhost:8080/agent');
     ws.onmessage = function (data) {
-        showGreeting(data.data.toString().replace(/\n/g, '<br>'));
+        showGreeting(data.data.toString().trim().replace(/\n/g, '<br>'));
     };
     setConnected(true);
 }
-function addNewTab(userId, userName) {
-    $(".nav-tabs").append('<li><a data-toggle="tab" id="' + userId + 'navtab" href="#' + userId + 'tab">' + userName + '</a></li>\n'
-    );
+
+function showGreeting(message) {
+    console.log(message);
+    var reg = /NEWCHAT\d+/;
+    if (message.match(reg) == message) {
+        console.log("NEW_CHAT CREATION");
+        addNewTab(message.split("NEWCHAT")[1]);
+    }
+    else if (message.match(/\d+::(\w+:)(\s*\w+\s*)+/) != null &&
+        message.match(/\d+::(\w+:)(\s*\w+\s*)+/)[0] == message) {
+        console.log("MESAGE RECEIVED");
+        var userId = message.split("::")[0];
+        var idOfTable = "#greetings" + userId;
+        $(idOfTable).append("<tr><td> " + message.toString() + "</td></tr>");
+    } else if (message.match(/server:(\s*\w+\s*)+/) != null &&
+        message.match(/server:(\s*\w+\s*)+/)[0] == message) {
+        alert(message);
+    }
+}
+
+function addNewTab(userId) {
+    $(".nav-tabs").append('<li><a data-toggle="tab" onclick="tabClick(' + userId + ')" id="' + userId + 'taba" href="#conversation' + userId + '">' + userId + '</a></li>\n');
     createNewChatWindow(userId)
 }
 
 function createNewChatWindow(userId) {
-    var a =
-        ' <div id="' + userId + 'tab" class="tab-pane fade">' +
-        '   <ul id="' + userId + 'Messages" class="messages">\n' +
-        '    </ul>\n' +
-        '    <div class="bottom_wrapper clearfix">\n' +
-        '        <div class="message_input_wrapper"><input class="message_input" id="' + userId + 'Input" placeholder="Type your message here..."/></div>\n' +
-        '        <div class="send_message" id="' + userId + 'Send" onclick="sendMessage(\'' + userId + '\')">\n' +
-        '            <div class="text">Send</div>\n' +
-        '        </div>\n' +
-        '    </div>' +
-        '</div>';
-    $(".col-md-12").append(a);
+    var table = '' +
+        '<table id="conversation' + userId + '" class="tab-pane fade table table-striped">' +
+        '   <thead>' +
+        '   </thead>' +
+        '  <tbody id="greetings' + userId + '">' +
+        '   </tbody>' +
+        '</table>';
+    $(".tab-content").append(table);
+}
+
+function tabClick(n) {
+    currentChatId=n;
+}
+
+function closeChat() {
+    var data = JSON.stringify({'message': "/leaveCurrentChat:"+currentChatId})
+    ws.send(data);
+    $('#'+ "conversation"+ currentChatId).remove();
+    $('#' + currentChatId + "taba").remove();
 }
 
 function disconnect() {
@@ -54,14 +81,6 @@ function sendMessage() {
 }
 
 
-function showGreeting(message) {
-    if(message==="NEWCHAT"){
-        addNewTab("","");//+ obj.id, obj.newUserName);//TODO
-    }else{
-        $("#greetings").append("<tr><td> " + message + "</td></tr>");
-    }
-}
-
 $(function () {
     $("form").on('submit', function (e) {
         e.preventDefault();
@@ -76,6 +95,6 @@ $(function () {
         sendMessage();
     });
     $("#closeCurrentChat").click(function () {
-        //closeChat();
+        closeChat();
     });
 });

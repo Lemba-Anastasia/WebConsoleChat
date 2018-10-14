@@ -1,6 +1,7 @@
 package com.example.sweater;
 
 import com.example.sweater.Client.*;
+import com.example.sweater.consoleServer.Client.AgentConsole;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -77,36 +78,78 @@ public class Base {
             UserInterfece freeUser = queueOfWaitingUsers.peekFirst();
             if (freeUser != null) {
                 AgentInterface freeAgent;
-                queueOfWaitingUsers.remove(freeUser);
+                log.info("---------ther are " + freeUser.getName());
                 synchronized (queueOfWaitingAgents) {
                     freeAgent = queueOfWaitingAgents.peekFirst();
-                    freeUser.setCompanion(freeAgent);
-                    freeAgent.getUsers().add(freeUser);
-                    freeAgent.getUsers().add(freeUser);
-                    if (freeAgent.isBusy())
-                        queueOfWaitingAgents.remove(freeAgent);
-                }
-                try {
-                    log.info("---------send waiting mesage");
-                    freeUser.sendMessageToMyself("server: You are connected to " + freeAgent.getName());
-                    freeUser.getCompanion().sendMessageToMyself(freeUser.getWaitingMessages());
-                    freeUser.clearBuffer();
-                } catch (IOException e) {
-                    log.warning(e.getMessage());
+                    if (freeAgent != null) {
+                        log.info("---------ther are " + freeAgent.getName());
+                        freeUser.setCompanion(freeAgent);
+                        if (freeAgent instanceof WebAgent)
+                            ((WebAgent)freeAgent).getUsers().add(freeUser);
+                        if (freeAgent instanceof AgentConsole)
+                            ((AgentConsole) freeAgent).setCompanion(freeUser);
+                        log.info("---------bind " + freeAgent.getName() + " & " + freeUser.getName());
+                        if (freeAgent.isBusy())
+                            queueOfWaitingAgents.remove(freeAgent);
+                        queueOfWaitingUsers.remove(freeUser);
+                        try {
+                            log.info("---------chat created between " + freeAgent.getName() + " & " + freeUser.getName());
+                            freeUser.sendMessageToMyself("server: You are connected to " + freeAgent.getName());
+                            freeAgent.sendMessageToMyself("NEWCHAT" + freeUser.getID());
+                            freeAgent.sendMessageToMyself(freeUser.getWaitingMessages());
+                            freeUser.clearBuffer();
+                        } catch (IOException e) {
+                            log.warning(e.getMessage());
+                        }
+                    }
                 }
             }
         }
     }
 
+    public void leaveCurrentChat(int idCompanion, WebAgent webAgent) {
+        List<UserInterfece> userInterfeceList = webAgent.getUsers();
+        webAgent.getUsers().forEach(userInterfece -> {
+                    if (userInterfece.getID() == idCompanion) {
+                        try {
+                            userInterfece.sendMessageToMyself("server: Companion left the chat");
+                            userInterfece.setCompanion(null);
+                            webAgent.getUsers().remove(userInterfece);
+                        } catch (IOException e) {
+                            log.warning(e.getMessage());
+                        }
+                    }
+                }
+        );
+    }
+
     public void leaveChat(Client disconnectedClient) throws IOException {
         if (disconnectedClient instanceof AgentInterface) {
-            ((AgentInterface) disconnectedClient).getUsers().forEach(userInterfece -> userInterfece.setCompanion(null));
-            //TODO: отправку сообщения юзеру о то м что агент отключился
-            //disconnectedClient.getCompanion().sendMessageToMyself("server: Companion left the chat");
-            ((AgentInterface) disconnectedClient).getUsers().clear();
+            if (disconnectedClient instanceof WebAgent) {
+                ((WebAgent) disconnectedClient).getUsers().forEach(userInterfece -> {
+                    try {
+                        userInterfece.sendMessageToMyself("server: Companion left the chat");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                ((WebAgent) disconnectedClient).getUsers().forEach(userInterfece -> userInterfece.setCompanion(null));
+                ((WebAgent) disconnectedClient).getUsers().clear();
+            }
+            if (disconnectedClient instanceof AgentConsole) {
+                ((AgentConsole) disconnectedClient).getCompanion().sendMessageToMyself("server: Companion left the chat");
+                ((AgentConsole) disconnectedClient).getCompanion().setCompanion(null);
+                ((AgentConsole) disconnectedClient).setCompanion(null);
+            }
+            chatCreation();
+
         } else if (disconnectedClient instanceof UserInterfece) {
             AgentInterface agentInterface = ((UserInterfece) disconnectedClient).getCompanion();
-            agentInterface.getUsers().remove(disconnectedClient);
+            agentInterface.sendMessageToMyself(((UserInterfece) disconnectedClient).getID() + "::server: companion left the chat");
+            if (((UserInterfece) disconnectedClient).getCompanion() instanceof WebAgent)
+                ((WebAgent)agentInterface).getUsers().remove(disconnectedClient);
+            if (((UserInterfece) disconnectedClient).getCompanion() instanceof AgentConsole)
+                ((AgentConsole)agentInterface).setCompanion(null);
             ((UserInterfece) disconnectedClient).setCompanion(null);
             if (!agentInterface.isBusy()) {
                 queueOfWaitingAgents.add(agentInterface);
@@ -143,36 +186,81 @@ public class Base {
         return null;
     }
 
-//    public void exit(Object o) {
-//        Client client;
-//        if (o instanceof WebSocketSession) {
-//            client = searchClientBySession((WebSocketSession) o);
-//        } else {
-//            client = (Client) o;
-//        }
-//        if (client.getCompanion() != null) {
-//            if (client instanceof UserInterfece) {
-//                queueOfWaitingAgents.add((AgentInterface) client.getCompanion());
-//                chatCreation();
-//            } else {
-//                client.getCompanion().setCompanion(null);
-//            }
-//            log.info(client.getName() + " left the chat");
-//            try {
-//                client.getCompanion().sendMessageToMyself(" Companion disconnected");
-//                client.close();
-//                remove(client);
-//            } catch (IOException e) {
-//                log.warning(e.getMessage());
-//            }
-//        } else {
-//            try {
-//                client.close();
-//            } catch (IOException e) {
-//                log.warning(e.getMessage());
-//            }
-//        }
-//    }
+    public void exit(Object o) {
+        Client client;
+        if (o instanceof WebSocketSession) {
+            client = searchClientBySession((WebSocketSession) o);
+        } else {
+            client = (Client) o;
+        }
+        if (client instanceof AgentInterface) {
+            if(client instanceof WebAgent){
+                if (!((WebAgent) client).getUsers().isEmpty()) {
+                    ((WebAgent) client).getUsers().forEach(userInterfece -> userInterfece.setCompanion(null));
+                    try {
+                        ((WebAgent) client).getUsers().forEach(userInterfece -> {
+                            try {
+                                userInterfece.sendMessageToMyself(" Companion disconnected");
+                            } catch (IOException e) {
+                                log.warning(e.getMessage());
+                            }
+                        });
+                        log.info(client + " exit");
+                        client.close();
+                        remove(client);
+                    } catch (IOException e) {
+                        log.warning(e.getMessage());
+                    }
+                } else {
+                    try {
+                        client.close();
+                        remove(client);
+                    } catch (IOException e) {
+                        log.warning(e.getMessage());
+                    }
+                }
+            }else if(client instanceof AgentConsole){
+                if (client.isBusy()) {
+                    ((AgentConsole) client).getCompanion().setCompanion(null);
+                    try {
+                        ((AgentConsole) client).getCompanion().sendMessageToMyself(" Companion disconnected");
+                        log.info(client + " exit");
+                        client.close();
+                        remove(client);
+                    } catch (IOException e) {
+                        log.warning(e.getMessage());
+                    }
+                } else {
+                    try {
+                        client.close();
+                        remove(client);
+                    } catch (IOException e) {
+                        log.warning(e.getMessage());
+                    }
+                }
+            }
+
+        } else if (client instanceof UserInterfece) {
+            if (client.isBusy()) {
+                queueOfWaitingAgents.add((AgentInterface) ((UserInterfece) client).getCompanion());
+                chatCreation();
+                log.info(client + " exit");
+                try {
+                    ((UserInterfece) client).getCompanion().sendMessageToMyself(((UserInterfece) client).getID() + "::server: Companion disconnected");
+                    client.close();
+                    remove(client);
+                } catch (IOException e) {
+                    log.warning(e.getMessage());
+                }
+            } else {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.warning(e.getMessage());
+                }
+            }
+        }
+    }
 
     public Deque<AgentInterface> getQueueOfWaitingAgents() {
         synchronized (queueOfWaitingAgents) {

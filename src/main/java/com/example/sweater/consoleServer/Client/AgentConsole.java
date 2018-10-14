@@ -1,7 +1,6 @@
 package com.example.sweater.consoleServer.Client;
 
 import com.example.sweater.Client.AgentInterface;
-import com.example.sweater.Client.Client;
 import com.example.sweater.Client.UserInterfece;
 
 import java.io.IOException;
@@ -12,17 +11,16 @@ import java.util.List;
 public class AgentConsole implements AgentInterface {
     private String name;
     private Socket socket;
-    private List<UserInterfece> companionList;
+    private UserInterfece companion;
 
     public AgentConsole(String name, Socket socket) {
         this.name = name;
         this.socket = socket;
-        companionList=new ArrayList<>();
     }
 
     @Override
     public boolean isBusy() {
-        return (!companionList.isEmpty());
+        return (!(companion ==null));
     }
 
     public Socket getSocket() {
@@ -30,12 +28,11 @@ public class AgentConsole implements AgentInterface {
     }
 
     public void sendMessage(String message) throws IOException {
-        UserInterfece u=companionList.get(0);
-        if (u instanceof UserConsole) {
-            ((UserConsole)u).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
-            ((UserConsole)u).getSocket().getOutputStream().flush();
+        if (companion instanceof UserConsole) {
+            ((UserConsole)companion).getSocket().getOutputStream().write((name + ": " + message + "\n").getBytes());
+            ((UserConsole)companion).getSocket().getOutputStream().flush();
         }else{
-            u.sendMessageToMyself(name + ": " + message);
+            companion.sendMessageToMyself(name + ": " + message);
         }
     }
 
@@ -63,9 +60,8 @@ public class AgentConsole implements AgentInterface {
         return name;
     }
 
-    @Override
-    public List<UserInterfece> getUsers() {
-        return companionList;
+    public UserInterfece getCompanion() {
+        return companion;
     }
 
     @Override
@@ -76,5 +72,9 @@ public class AgentConsole implements AgentInterface {
 
         if (name != agent.getName()) return false;
         return socket == agent.getSocket();
+    }
+
+    public void setCompanion(UserInterfece freeUser) {
+        companion=freeUser;
     }
 }
