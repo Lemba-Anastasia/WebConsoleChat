@@ -18,7 +18,7 @@ public class WSUserHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws IOException {
         Map<String, String> value = new Gson().fromJson(message.getPayload(), Map.class);
         String sendingMessage = value.get("message");
-        if (sendingMessage.charAt(0) == '/') messageHandlerForWebUser.handlingCommandsMessage(sendingMessage, session);
+        if ((sendingMessage.length() > 0) && (sendingMessage.charAt(0) == '/')) messageHandlerForWebUser.handlingCommandsMessage(sendingMessage, session);
         else {
             messageHandlerForWebUser.handlingMessage(sendingMessage, session);
         }
