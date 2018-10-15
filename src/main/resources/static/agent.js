@@ -76,7 +76,12 @@ function disconnect() {
 }
 
 function sendMessage() {
-    var data = JSON.stringify({'message': $("#message").val()})
+    if(currentChatId!=undefined){
+        var messageToCurrentUser=currentChatId+"::"+$("#message").val();
+        var data = JSON.stringify({'message': messageToCurrentUser});
+    }else{
+        var data = JSON.stringify({'message': $("#message").val()});
+    }
     ws.send(data);
 }
 
