@@ -1,11 +1,14 @@
 package com.example.sweater.consoleServer.Client;
 
 import com.example.sweater.Client.AgentInterface;
+import com.example.sweater.Client.RESTClient.RestAgent;
 import com.example.sweater.Client.UserInterfece;
 import com.example.sweater.IdCounter;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserConsole implements UserInterfece {
     private String name;
@@ -13,38 +16,38 @@ public class UserConsole implements UserInterfece {
     private AgentInterface companion;
     private String waitingPutMessages;
     private int id;
+    final private List<String> restMessages;
     public UserConsole(String name, Socket socket) {
         this.name=name;
         this.socket=socket;
         companion=null;
         waitingPutMessages="";
         id= IdCounter.getInstance().getId();
+        restMessages=new ArrayList<>();
     }
 
     @Override
     public void sendMessage(String message) throws IOException {
+        flashRESTChanel();
         if (companion instanceof AgentConsole) {
             ((AgentConsole)companion).getSocket().getOutputStream().write((message + "\n").getBytes());
             ((AgentConsole)companion).getSocket().getOutputStream().flush();
         }else{
             companion.sendMessageToMyself(message);
+            if(!(companion instanceof RestAgent)){
+                companion.setInputMessagesForREST(name + ": " + message);
+            }
         }
     }
 
     @Override public void sendMessageToMyself(String message) throws IOException  {
         socket.getOutputStream().write((message+"\n").getBytes());
         socket.getOutputStream().flush();
-
     }
 
     @Override
     public int getID(){
         return id;
-    }
-
-    @Override
-    public boolean hasConnectionObject(Object o) {
-        return socket.equals(o);
     }
 
     @Override
@@ -97,5 +100,33 @@ public class UserConsole implements UserInterfece {
 
         if (!name.equals(user.getName())) return false;
         return socket == user.getSocket();
+    }
+
+    @Override
+    public void setInputMessagesForREST(String s) {
+        synchronized (restMessages){
+            restMessages.add(s);
+        }
+    }
+
+    @Override
+    public List<String> getRESTInputMessages(){
+        synchronized (restMessages) {
+            return restMessages;
+        }
+    }
+
+    @Override
+    public void flashRESTChanel() {
+        restMessages.clear();
+    }
+
+
+    @Override
+    public String toString() {
+        return "UserConsole{" +
+                ", name='" + name + '\'' +
+                ", id=" + id +
+                '}';
     }
 }

@@ -1,32 +1,35 @@
-package com.example.sweater.Client;
+package com.example.sweater.Client.RESTClient;
 
-import com.example.sweater.Client.RESTClient.RestAgent;
+import com.example.sweater.Client.AgentInterface;
+import com.example.sweater.Client.UserInterfece;
 import com.example.sweater.IdCounter;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WebUser implements UserInterfece {
-    private WebSocketSession socketSession;
+public class RestUser implements UserInterfece {
     private String name;
     private AgentInterface companion;
     private String waitingPutMessages;
     private int id;
     private final List<String> restMessages;
 
-    public WebUser(String clientName, WebSocketSession session) {
+    public RestUser(String clientName) {
         this.name = clientName;
-        this.socketSession = session;
         waitingPutMessages = "";
-        id= IdCounter.getInstance().getId();
+        id = IdCounter.getInstance().getId();
         restMessages=new ArrayList<>();
     }
+
     @Override
-    public void setBufferMessages (String m) {
-        waitingPutMessages += id + "::"+name + ": " + m + "\n";
+    public AgentInterface getCompanion() {
+        return null;
+    }
+
+    @Override
+    public void setCompanion(AgentInterface companion) {
+        this.companion=companion;
     }
 
     @Override
@@ -37,16 +40,13 @@ public class WebUser implements UserInterfece {
     @Override
     public void sendMessage(String message) throws IOException {
         flashRESTChanel();
-        sendMessageToMyself(message);
-        companion.sendMessageToMyself( message);
-        if(!(companion instanceof RestAgent)){
-            companion.setInputMessagesForREST(message);
-        }
+        companion.sendMessageToMyself(message);
+        companion.setInputMessagesForREST(name + ": " + message);
     }
 
     @Override
-    public int getID(){
-        return id;
+    public void setBufferMessages(String m) {
+        waitingPutMessages += id + "::" + name + ": " + m + "\n";
     }
 
     @Override
@@ -55,32 +55,23 @@ public class WebUser implements UserInterfece {
     }
 
     @Override
-    public void sendMessageToMyself(String message) throws IOException{
-        socketSession.sendMessage(new TextMessage(message));
-    }
-
-    public boolean hasConnectionObject(Object o) {
-        return socketSession.equals(o);
-    }
-
-    @Override
-    public void close() throws IOException {
-        socketSession.close();
-    }
-
-    @Override
     public String getName() {
         return name;
     }
 
     @Override
-    public AgentInterface getCompanion() {
-        return companion;
+    public int getID() {
+        return id;
     }
 
     @Override
-    public void setCompanion(AgentInterface companion) {
-        this.companion = companion;
+    public void sendMessageToMyself(String message) throws IOException {
+        setInputMessagesForREST(message);
+    }
+
+    @Override
+    public void close() throws IOException {
+        flashRESTChanel();
     }
 
     @Override
@@ -107,9 +98,8 @@ public class WebUser implements UserInterfece {
         restMessages.clear();
     }
 
-    @Override
     public String toString() {
-        return "WebUser{" +
+        return "WebAgent{" +
                 ", name='" + name + '\'' +
                 ", id=" + id +
                 '}';

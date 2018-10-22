@@ -85,7 +85,7 @@ public class Base {
                         log.info("---------ther are " + freeAgent.getName());
                         freeUser.setCompanion(freeAgent);
                         if (freeAgent instanceof WebAgent)
-                            ((WebAgent)freeAgent).getUsers().add(freeUser);
+                            ((WebAgent) freeAgent).getUsers().add(freeUser);
                         if (freeAgent instanceof AgentConsole)
                             ((AgentConsole) freeAgent).setCompanion(freeUser);
                         log.info("---------bind " + freeAgent.getName() + " & " + freeUser.getName());
@@ -146,9 +146,9 @@ public class Base {
             AgentInterface agentInterface = ((UserInterfece) disconnectedClient).getCompanion();
             agentInterface.sendMessageToMyself(((UserInterfece) disconnectedClient).getID() + "::server: companion left the chat");
             if (((UserInterfece) disconnectedClient).getCompanion() instanceof WebAgent)
-                ((WebAgent)agentInterface).getUsers().remove(disconnectedClient);
+                ((WebAgent) agentInterface).getUsers().remove(disconnectedClient);
             if (((UserInterfece) disconnectedClient).getCompanion() instanceof AgentConsole)
-                ((AgentConsole)agentInterface).setCompanion(null);
+                ((AgentConsole) agentInterface).setCompanion(null);
             ((UserInterfece) disconnectedClient).setCompanion(null);
             if (!agentInterface.isBusy()) {
                 queueOfWaitingAgents.add(agentInterface);
@@ -159,30 +159,62 @@ public class Base {
 
     public Client searchClientBySession(WebSocketSession webSession) {
         for (UserInterfece u : userList) {
-            if (u.hasConnectionObject(webSession))
-                return u;
+            if (u instanceof WebUser) {
+                if (((WebUser)u).hasConnectionObject(webSession))
+                    return u;
+            }
         }
         for (AgentInterface a : agentList) {
-            if (a.hasConnectionObject(webSession))
-                return a;
+            if (a instanceof WebAgent) {
+                if (((WebAgent)a).hasConnectionObject(webSession))
+                    return a;
+            }
         }
         return null;
     }
 
     public UserInterfece searchUserBySession(WebSocketSession session) {
         for (UserInterfece u : userList) {
-            if (u.hasConnectionObject(session))
-                return u;
+            if (u instanceof WebUser) {
+                if (((WebUser)u).hasConnectionObject(session))
+                    return u;
+            }
         }
         return null;
     }
 
     public AgentInterface searchAgentOnSession(WebSocketSession session) {
         for (AgentInterface a : agentList) {
-            if (a.hasConnectionObject(session))
-                return a;
+            if (a instanceof WebAgent) {
+                if (((WebAgent)a).hasConnectionObject(session))
+                    return a;
+            }
         }
         return null;
+    }
+
+    public List<AgentInterface> getAgentsList() {
+        synchronized (agentList) {
+            return agentList;
+        }
+    }
+
+    public List<UserInterfece> getUsersList() {
+        synchronized (userList) {
+            return userList;
+        }
+    }
+
+    public Deque<AgentInterface> getQueueOfWaitingAgents() {
+        synchronized (queueOfWaitingAgents) {
+            return queueOfWaitingAgents;
+        }
+    }
+
+    public Deque<UserInterfece> getQueueOfWaitingUsers() {
+        synchronized (queueOfWaitingUsers) {
+            return queueOfWaitingUsers;
+        }
     }
 
     public void exit(Object o) {
@@ -193,7 +225,7 @@ public class Base {
             client = (Client) o;
         }
         if (client instanceof AgentInterface) {
-            if(client instanceof WebAgent){
+            if (client instanceof WebAgent) {
                 if (!((WebAgent) client).getUsers().isEmpty()) {
                     ((WebAgent) client).getUsers().forEach(userInterfece -> userInterfece.setCompanion(null));
                     try {
@@ -218,7 +250,7 @@ public class Base {
                         log.warning(e.getMessage());
                     }
                 }
-            }else if(client instanceof AgentConsole){
+            } else if (client instanceof AgentConsole) {
                 if (client.isBusy()) {
                     ((AgentConsole) client).getCompanion().setCompanion(null);
                     try {
@@ -254,10 +286,19 @@ public class Base {
             } else {
                 try {
                     client.close();
+                    remove(client);
                 } catch (IOException e) {
                     log.warning(e.getMessage());
                 }
             }
         }
+    }
+
+    public AgentInterface searchAgentByID(int id) {
+        return agentList.stream().filter(agent->agent.getID()==id).findFirst().get();
+    }
+
+    public UserInterfece searchUserByID(int id) {
+        return userList.stream().filter(user->user.getID()==id).findFirst().get();
     }
 }

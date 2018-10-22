@@ -8,6 +8,5 @@ public interface UserInterfece extends Client{
     String getWaitingMessages();
     void clearBuffer();
     void sendMessage(String message) throws IOException;
-    int getID();
     void setBufferMessages(String m);
 }
