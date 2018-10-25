@@ -33,7 +33,7 @@ public class MonoThreadClientHandler implements Runnable {
         try {
             String message;
             while (!socket.isClosed() && (message = in.readLine()) != null) {
-                if (message.charAt(0) == '/') handlingCommandsMessage(message);
+                if ((message.length() > 0) && (message.charAt(0) == '/')) handlingCommandsMessage(message);
                 else {
                     handlingMessage(message);
                 }
